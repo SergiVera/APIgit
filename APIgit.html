@@ -16,20 +16,28 @@
   <script>
   $(document).ready(function(){
     $("button").click(function(){
-      $("button").hide();
       var username = $("input").val();
       $("input").val(username);
       console.log(username);
-      var followers;
       $.ajax({
         type: 'GET',
         url: "https://api.github.com/users/" +username+ "/followers",
         dataType: 'json',
         success: function(userfollowers){
-        console.log(userfollowers);
-        followers = userfollowers.length;
-        console.log("Number of followers: " +followers);
+          var followers;
+          console.log(userfollowers);
+          followers = userfollowers.length;
+          console.log("Number of followers: " +followers);
+          $(followersshow).html(`
+            <h4>Number of followers: ${followers}</h4>
+            `);
+        },
+        statusCode: {
+          404: function(){
+            alert("Username doesn't exist");
+          }
         }
+
       });
       $.ajax({
         type: 'GET',
@@ -44,9 +52,10 @@
               <th>Description</th>
               <th>Visit repository</th>
               <th>Status</th>
-              <th>Number of followers</th>
+              <th>Watchers of the repo</th>
             </tr>
             `);
+          $("tbody").html("");
           for(let i=0;i<reposuser.length;i++){
               var status;
               var description;
@@ -64,34 +73,20 @@
               }
               console.log(status);
               console.log(i);
-              console.log("Number of followers inside for: " +followers);
-              if(i==0){
               $("tbody").append(`
                 <tr>
                   <td>${reposuser[i].name}</td>
                   <td>${description}</td>
                   <td><a target="_blank" href="${reposuser[i].html_url}">Click here!</a></td>
                   <td>${status}</td>
-                  <td>${followers}</td>
+                  <td>${reposuser[i].watchers_count}</td>
                 </tr>
               `);
               }
-              else {
-                $("tbody").append(`
-                  <tr>
-                    <td>${reposuser[i].name}</td>
-                    <td>${description}</td>
-                    <td><a target="_blank" href="${reposuser[i].html_url}">Click here!</a></td>
-                    <td>${status}</td>
-                    <td></td>
-                  </tr>
-                `);
-              }
       }
-    }
     });
-    });
-  });
+});
+});
   </script>
 </head>
 <body>
@@ -107,6 +102,8 @@
         <input type="text" name="userfield" class="form-control" id="username">
       </div>
       <button type="submit" id="bt_go" class="btn btn-default">GO!</button>
+      <br><br>
+      <h4 id = "followersshow"></h4>
       <br><br>
       <!--Let's declare our table where we'll print the repos and its parameters -->
       <table class="table table-bordered">
